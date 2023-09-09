@@ -1,0 +1,44 @@
+server:
+  port: 8001
+
+spring:
+  jpa:
+    show-sql: true
+    database: postgresql
+    properties:
+      org:
+        hibernate:
+          envers:
+            audit_table_suffix: _LOG
+      hibernate:
+        jdbc.batch_size: 20
+        cache:
+          use_query_cache: false
+          use_second_level_cache: false
+          use_structured_entries: false
+          use_minimal_puts: false
+        format_sql: true
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: ${DATASOURCE_URL}
+#    url: jdbc:postgresql://@evgpostgresdb-postgresql:5432/evg?user=evguser&password=evgpwd
+#    url: jdbc:postgresql://127.0.0.1:5432/evg?user=evguser&password=evgpwd
+    username: ${DATABASE_USER}
+#    username: evguser
+    password: ${DATABASE_PASSWORD}
+#    password: evgpwd
+    driverClassName: org.postgresql.Driver
+    #    continue-on-error: : true
+    hikari:
+      pool-name: HikariPool
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 150000
+      max-lifetime: 300000
+      connection-timeout: 5000
+      register-mbeans: true
+  transaction:
+    default-timeout: 200
+
+service:
+  encryptionKey: Javaisattheheart
