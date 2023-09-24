@@ -15,11 +15,13 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
@@ -29,7 +31,7 @@ import java.util.Objects;
 @Slf4j(topic = "AUTHENTICATION_FILTER.BASIC")
 public class AdminBasicAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     public AdminBasicAuthenticationFilter(AdminAuthenticationManager adminAuthenticationManager,
                                           UserRepository userRepository) {
@@ -38,7 +40,8 @@ public class AdminBasicAuthenticationFilter extends AbstractAuthenticationProces
 
         setSessionAuthenticationStrategy((authentication, reauest, response) ->
                 SecurityContextHolder.getContext().setAuthentication(authentication));
-        setAuthenticationSuccessHandler((request, response, authentication) -> {});
+        setAuthenticationSuccessHandler((request, response, authentication) -> {
+        });
 //        setAuthenticationFailureHandler((request, response, authentication) ->
 //                handleAuthenticationException(response, authentication));
         setAuthenticationManager(adminAuthenticationManager);
@@ -49,16 +52,27 @@ public class AdminBasicAuthenticationFilter extends AbstractAuthenticationProces
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException, IOException, ServletException {
         String token = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-        if(StringUtils.isBlank(token)) {
+        if (StringUtils.isBlank(token)) {
             throw new BadCredentialsException("Authorization header is empty");
         }
 
         User user = findUser(token);
-        if(Objects.nonNull(user)) {
+        if (Objects.nonNull(user)) {
+            response.setHeader("x-auth-token",String.format("%s:%s", user.getEmail(), user.getId()));
+//                            Arrays.toString(Base64.getEncoder().encode(String.format("%s:%s", user.getEmail(),
+//                            user.getId())
+//                            .getBytes(StandardCharsets.ISO_8859_1))));
+            response.setHeader("x-username", user.getEmail());
             return new TokenAuthentication(user.getEmail(), List.of(new SimpleGrantedAuthority("user")));
         }
 
         throw new BadCredentialsException("Email or password incorrect");
+    }
+
+    @Override
+    protected void successfulAuthentication(final HttpServletRequest request, final HttpServletResponse response, final FilterChain chain, final Authentication authResult) throws IOException, ServletException {
+        SecurityContextHolder.getContext().setAuthentication(authResult);
+        chain.doFilter(request, response);
     }
 
     private User findUser(String token) {
