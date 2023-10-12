@@ -1,5 +1,5 @@
 server:
-  port: 8001
+  port: 8000
 
 spring:
   jpa:
@@ -23,9 +23,9 @@ spring:
     url: ${DATASOURCE_URL}
 #    url: jdbc:postgresql://@evgpostgresdb-postgresql:5432/evg?user=evguser&password=evgpwd
 #    url: jdbc:postgresql://127.0.0.1:5432/evg?user=evguser&password=evgpwd
-#   username: ${DATABASE_USER}
+    username: ${DATABASE_USER}
 #    username: evguser
-#   password: ${DATABASE_PASSWORD}
+    password: ${DATABASE_PASSWORD}
 #    password: evgpwd
     driverClassName: org.postgresql.Driver
     #    continue-on-error: : true
